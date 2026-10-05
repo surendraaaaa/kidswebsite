@@ -38,7 +38,7 @@ import { RouterLink } from '@angular/router';
             <h4>Get in Touch</h4>
             <ul>
               <li><a href="https://wa.me/919876543210" target="_blank" rel="noopener">💬 WhatsApp Support</a></li>
-              <li><a href="mailto:support@kidskart.in">✉️ support@kidskart.in</a></li>
+              <li><a href="mailto:support@kidskart.in">✉️ support&#64;kidskart.in</a></li>
               <li><a href="tel:+919876543210">📞 +91 98765 43210</a></li>
             </ul>
             <div class="footer__social" style="margin-top: 1rem;">
