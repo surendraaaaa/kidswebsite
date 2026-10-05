@@ -1,221 +1,52 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  images?: string[];
-  ageRange: string;
-  category: string;
-  badge?: 'new' | 'sale' | 'discount';
-  rating?: number;
-  reviewCount?: number;
-}
-
-interface Category {
-  name: string;
-  image: string;
-  link: string;
-  count?: number;
-}
-
 @Component({
-  selector: 'app-home',
-  standalone: true,
-  imports: [CommonModule, RouterLink],
+  selector: 'app-home', standalone: true, imports: [CommonModule, RouterLink],
   template: `
-    <!-- Sale Banner -->
-    <div class="sale-banner">
-      🎉 Grand Opening Sale! Get 20% Off on First Order - Use Code: WELCOME20 | <a href="/catalog">Shop Now →</a>
-    </div>
-
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="container">
-        <h1>Style & Comfort for Your Little Ones</h1>
-        <p>Premium quality kids clothing with safe, breathable fabrics. Designed for play, made for comfort.</p>
-        <div class="flex gap-2 justify-center mt-3">
-          <button class="btn btn-primary" routerLink="/catalog">Shop Collection</button>
-          <button class="btn btn-outline" routerLink="/about">Our Story</button>
+    <main class="atelier">
+      <section class="campaign" aria-labelledby="campaign-title">
+        <div class="copy">
+          <p class="eyebrow">THE EVERYDAY WARDROBE · AGES 0–17</p>
+          <h1 id="campaign-title">Little moments.<br><em>Big personality.</em></h1>
+          <p class="intro">Discover their next favourite outfit. From first adventures to finding their own style.</p>
+          <div class="calls"><a class="shop" routerLink="/catalog">Explore the collection <span aria-hidden="true">↗</span></a><a class="quiet" href="#browse">Find their age group ↓</a></div>
+          <div class="campaign-note"><span class="dot"></span> MADE FOR A WARDROBE FULL OF PERSONALITY</div>
         </div>
-      </div>
-    </section>
-
-    <!-- Age Filter Chips -->
-    <section class="section section--sm bg-white">
-      <div class="container">
-        <div class="age-chips">
-          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '0-2Y'}">0-2 Years</div>
-          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '3-5Y'}">3-5 Years</div>
-          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '6-8Y'}">6-8 Years</div>
-          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '9-11Y'}">9-11 Years</div>
-          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '12-14Y'}">12-14 Years</div>
-          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '15-17Y'}">15-17 Years</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Categories Section -->
-    <section class="section">
-      <div class="container">
-        <div class="section-title">
-          <span class="section-title__subtitle">Browse By</span>
-          <h2 class="section-title__title">Shop Categories</h2>
-        </div>
-        <div class="grid grid-3">
-          <div class="category-card" *ngFor="let category of categories" [routerLink]="category.link">
-            <img [src]="category.image" [alt]="category.name" class="category-card__image">
-            <div class="category-card__overlay"></div>
-            <div class="category-card__content">
-              <h3 class="category-card__title">{{ category.name }}</h3>
-              <p class="text-muted">{{ category.count }} Products</p>
-            </div>
+        <div class="studio">
+          <div class="studio-label">THE COLOUR STUDIO <span>01 / 03</span></div>
+          <div class="rack" aria-hidden="true">
+            <div class="rail"></div>
+            <div class="look look-one"><div class="hanger"></div><div class="garment blue"><div class="collar"></div><div class="pocket"></div><div class="hem"></div></div></div>
+            <div class="look look-two"><div class="hanger"></div><div class="garment yellow"><div class="collar"></div><div class="stripe"></div><div class="hem"></div></div></div>
+            <div class="look look-three"><div class="hanger"></div><div class="garment red"><div class="collar"></div><div class="pocket"></div><div class="hem"></div></div></div>
+            <div class="floor"></div>
           </div>
+          <div class="studio-bottom"><span>Marine. Butter. A little bold.</span><span class="swatches"><i></i><i></i><i></i></span></div>
+          <p class="art-note">Concept illustration · Product photography coming soon</p>
         </div>
-      </div>
-    </section>
-
-    <!-- New Arrivals -->
-    <section class="section bg-white">
-      <div class="container">
-        <div class="section-title">
-          <span class="section-title__subtitle">Fresh Styles</span>
-          <h2 class="section-title__title">New Arrivals</h2>
+      </section>
+      <section id="browse" class="browse" aria-labelledby="browse-title">
+        <div class="section-heading"><div><p class="eyebrow">A STYLE FOR EVERY STAGE</p><h2 id="browse-title">Growing up looks good.</h2></div><a routerLink="/catalog">Browse all clothing ↗</a></div>
+        <div class="age-grid">
+          <a *ngFor="let group of groups; let i = index" routerLink="/catalog" [queryParams]="{age: group.key}" class="age-tile" [class.butter]="i === 1 || i === 4"><span class="tile-number">0{{i + 1}}</span><div class="tile-art" aria-hidden="true"><div class="mini-shirt"></div></div><span class="tile-name">{{group.name}}</span><span class="tile-age">{{group.label}} <span>↗</span></span></a>
         </div>
-        <div class="grid grid-4">
-          <div class="product-card" *ngFor="let product of newProducts">
-            <div class="product-card__image-container">
-              <img [src]="product.image" [alt]="product.name" class="product-card__image">
-              <div class="product-card__badges">
-                <span class="badge badge-new" *ngIf="product.badge === 'new'">New</span>
-                <span class="badge badge-sale" *ngIf="product.badge === 'sale'">Sale</span>
-                <span class="badge badge-discount" *ngIf="product.badge === 'discount'">-20%</span>
-              </div>
-            </div>
-            <div class="product-card__content">
-              <p class="product-card__category">{{ product.category }}</p>
-              <h3 class="product-card__title">{{ product.name }}</h3>
-              <p class="text-muted mb-1">{{ product.ageRange }}</p>
-              <div class="flex items-center gap-2">
-                <span class="product-card__price">₹{{ product.price }}</span>
-                <span class="product-card__price--original" *ngIf="product.originalPrice">₹{{ product.originalPrice }}</span>
-              </div>
-            </div>
-            <div class="product-card__actions">
-              <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
-            </div>
-          </div>
-        </div>
-        <div class="text-center mt-3">
-          <button class="btn btn-outline btn-lg" routerLink="/catalog">View All Products</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Sale & Clearance -->
-    <section class="section">
-      <div class="container">
-        <div class="section-title">
-          <span class="section-title__subtitle">Limited Stock</span>
-          <h2 class="section-title__title">Sale & Clearance</h2>
-        </div>
-        <div class="grid grid-4">
-          <div class="product-card" *ngFor="let product of saleProducts">
-            <div class="product-card__image-container">
-              <img [src]="product.image" [alt]="product.name" class="product-card__image">
-              <div class="product-card__badges">
-                <span class="badge badge-sale">Sale</span>
-                <span class="badge badge-discount">-{{ getDiscountPercent(product) }}%</span>
-              </div>
-            </div>
-            <div class="product-card__content">
-              <p class="product-card__category">{{ product.category }}</p>
-              <h3 class="product-card__title">{{ product.name }}</h3>
-              <p class="text-muted mb-1">{{ product.ageRange }}</p>
-              <div class="flex items-center gap-2">
-                <span class="product-card__price text-danger">₹{{ product.price }}</span>
-                <span class="product-card__price--original">₹{{ product.originalPrice }}</span>
-              </div>
-            </div>
-            <div class="product-card__actions">
-              <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Trust Section -->
-    <section class="trust-section">
-      <div class="container">
-        <div class="trust-section__grid">
-          <div class="trust-section__item">
-            <svg class="trust-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-            <h4 class="trust-section__title">100% Secure Checkout</h4>
-            <p class="trust-section__description">PCI DSS compliant with Razorpay</p>
-          </div>
-          <div class="trust-section__item">
-            <svg class="trust-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-            <h4 class="trust-section__title">Free Shipping</h4>
-            <p class="trust-section__description">On orders above ₹499</p>
-          </div>
-          <div class="trust-section__item">
-            <svg class="trust-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-            <h4 class="trust-section__title">Easy Returns</h4>
-            <p class="trust-section__description">30-day hassle-free returns</p>
-          </div>
-          <div class="trust-section__item">
-            <svg class="trust-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <h4 class="trust-section__title">Safe Materials</h4>
-            <p class="trust-section__description">Hypoallergenic, kid-safe fabrics</p>
-          </div>
-        </div>
-      </div>
-    </section>
+      </section>
+      <section class="editorial"><div><p class="eyebrow">LESS SCROLLING. MORE DISCOVERING.</p><h2>Their wardrobe.<br>Their way.</h2><p>Explore the catalogue to find clothing for their age and style.</p><a class="shop" routerLink="/catalog">Find a new favourite ↗</a></div><div class="type-art" aria-hidden="true"><span>PLAY.</span><span>GROW.</span><span>REPEAT.</span></div></section>
+    </main>
   `,
-  styles: []
+  styles: [`
+    :host{display:block} .atelier{--ink:#123653;--red:#e52b38;--butter:#f5e6a7;background:#fffdf8;color:var(--ink);font-family:Arial,Helvetica,sans-serif} .atelier *{box-sizing:border-box} .atelier a{color:inherit} .campaign{display:grid;grid-template-columns:1fr 1fr;max-width:1500px;margin:auto;min-height:650px;padding:38px 48px 58px;gap:34px;align-items:center}.copy{padding:24px 0}.eyebrow{font-size:11px!important;letter-spacing:2px;font-weight:700;color:var(--ink);margin:0 0 24px}.atelier h1{font-size:clamp(44px,5.5vw,82px);line-height:1.04;letter-spacing:-4px;color:var(--ink);font-weight:750;margin:0 0 28px}.atelier h1 em{font-family:Georgia,serif;font-weight:400;color:var(--red)}.intro{max-width:400px;font-size:17px;line-height:1.65;color:#4a6071}.calls{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-top:30px}.shop{display:inline-flex;justify-content:space-between;gap:24px;background:var(--ink);color:white!important;padding:17px 24px;border-radius:4px;font-size:14px;text-decoration:none;font-weight:700}.shop:hover{background:#204e70}.quiet{font-size:13px;text-decoration:underline;text-underline-offset:5px}.campaign-note{font-size:9px;letter-spacing:1.3px;margin-top:48px;display:flex;align-items:center;gap:10px}.dot{width:8px;height:8px;border-radius:50%;background:var(--red)}.studio{background:var(--butter);border-radius:8px;position:relative;min-height:540px;overflow:hidden;padding:24px;box-shadow:0 18px 36px #1236530c}.studio-label,.studio-bottom{display:flex;justify-content:space-between;font-size:10px;letter-spacing:1.5px;font-weight:700}.studio-label span{opacity:.6}.rack{height:385px;position:relative;perspective:900px}.rail{position:absolute;top:72px;left:4%;right:4%;height:8px;background:linear-gradient(#faf5e6,#9b9078,#e7dcc5);border-radius:8px;box-shadow:0 5px 9px #5d48242b}.look{position:absolute;top:77px;width:47%;height:280px;transform-origin:50% 0;transition:transform .5s ease}.look-one{left:-2%;transform:rotate(-10deg) rotateY(12deg);z-index:1}.look-two{left:26%;top:84px;transform:rotate(3deg);z-index:3}.look-three{left:57%;transform:rotate(12deg) rotateY(-15deg);z-index:2}.studio:hover .look-one{transform:rotate(-14deg) rotateY(18deg)}.studio:hover .look-three{transform:rotate(16deg) rotateY(-20deg)}.hanger{position:absolute;top:18px;left:24%;width:52%;height:64px;border:6px solid #b38250;clip-path:polygon(50% 0,100% 85%,100% 100%,0 100%,0 85%);background:linear-gradient(155deg,#d7b27b,#986131);border-radius:8px}.hanger:after{content:'';position:absolute;left:46%;top:-25px;width:12px;height:24px;border:3px solid #795e43;border-bottom:0;border-radius:20px}.garment{position:absolute;top:52px;left:0;width:100%;height:225px;clip-path:polygon(25% 0,39% 5%,61% 5%,75% 0,100% 24%,86% 46%,76% 37%,76% 100%,24% 100%,24% 37%,14% 46%,0 24%);filter:drop-shadow(8px 16px 8px #0003);border-radius:12px;background:linear-gradient(110deg,#1b5884,#123653 45%,#29678d 70%,#102c44);box-shadow:inset 0 -12px 25px #0002}.yellow{background:linear-gradient(110deg,#ead79a,#fff3c3 45%,#dfc980 75%,#f9eaba)}.red{background:linear-gradient(110deg,#bb2132,#ef4b53 45%,#c72536 75%,#f0515d)}.collar{position:absolute;top:0;left:39%;width:22%;height:24px;border:5px solid #0002;border-top:0;border-radius:0 0 50% 50%;box-shadow:0 3px 2px #ffffff30}.pocket{position:absolute;top:72px;left:56%;height:45px;width:26px;border:1px dashed #ffffff50;border-radius:0 0 8px 8px;background:#ffffff0c}.hem{position:absolute;bottom:10px;left:26%;right:26%;border-top:1px dashed #ffffff50}.stripe{position:absolute;top:76px;width:100%;height:13px;background:var(--ink);box-shadow:0 23px 0 var(--ink),0 46px 0 var(--ink)}.floor{position:absolute;bottom:24px;left:10%;width:80%;height:18px;border-radius:50%;background:#70532425;filter:blur(14px)}.swatches{display:flex;gap:6px}.swatches i{width:13px;height:13px;border-radius:50%;background:var(--ink)}.swatches i:nth-child(2){background:var(--red)}.swatches i:nth-child(3){background:#fff5ca;border:1px solid #c7b677}.art-note{font-size:10px;margin:18px 0 0;color:#6a6042}.browse{max-width:1500px;margin:auto;padding:32px 48px 72px;scroll-margin-top:100px}.section-heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:30px}.section-heading .eyebrow{margin-bottom:12px}.atelier h2{font-size:clamp(28px,3vw,44px);letter-spacing:-1.5px;line-height:1.1;color:var(--ink);margin:0}.section-heading>a{font-size:13px;text-underline-offset:5px}.age-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}.age-tile{background:#e9eef1;border-radius:5px;padding:16px;text-decoration:none;transition:background .2s,transform .2s}.age-tile:hover{transform:translateY(-4px);background:#dce5eb}.age-tile.butter{background:#f5edcf}.tile-number{font-size:10px;opacity:.65}.tile-art{height:100px;display:grid;place-items:center;perspective:400px}.mini-shirt{width:76px;height:78px;background:linear-gradient(120deg,#315d7b,#123653);clip-path:polygon(25% 0,40% 8%,60% 8%,75% 0,100% 25%,85% 45%,75% 35%,75% 100%,25% 100%,25% 35%,15% 45%,0 25%);transform:rotate(-8deg) rotateY(15deg)}.age-tile:nth-child(3n) .mini-shirt{background:linear-gradient(120deg,#f35c64,#ce2637);transform:rotate(8deg)}.tile-name{display:block;font-size:16px;font-weight:700;margin-top:8px}.tile-age{display:flex;justify-content:space-between;font-size:11px;margin-top:7px}.editorial{display:grid;grid-template-columns:1fr 1fr;gap:40px;background:var(--ink);padding:60px max(32px,calc((100vw - 1404px)/2));color:white}.editorial .eyebrow,.editorial h2{color:white}.editorial p:not(.eyebrow){color:#c6d4de;max-width:350px;margin:24px 0;line-height:1.7}.editorial .shop{background:var(--butter);color:var(--ink)!important}.type-art{display:flex;flex-direction:column;justify-content:center;font-size:clamp(45px,7vw,100px);line-height:.95;font-weight:800;letter-spacing:-4px;transform:rotate(-5deg);text-shadow:3px 3px 0 #0a253c,6px 6px 0 #0a253c}.type-art span:nth-child(1){color:var(--butter)}.type-art span:nth-child(2){color:#f75c66}.atelier a:focus-visible{outline:3px solid var(--red);outline-offset:5px}@media(max-width:1100px){.age-grid{grid-template-columns:repeat(3,1fr)}.campaign{padding:28px;gap:24px}.atelier h1{letter-spacing:-2px}.studio{min-height:500px}.rack{height:340px}.garment{height:200px}}@media(max-width:700px){.campaign{grid-template-columns:1fr;padding:24px 20px 32px}.copy{padding:12px 0}.atelier h1{font-size:48px}.campaign-note{margin-top:28px}.studio{min-height:470px}.rack{height:330px}.garment{height:210px}.browse{padding:30px 20px 40px}.section-heading{align-items:start;flex-direction:column}.age-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.editorial{grid-template-columns:1fr;padding:40px 24px}.type-art{font-size:65px;margin:20px 0}.calls{gap:18px}}@media(prefers-reduced-motion:reduce){.look,.age-tile{transition:none}.studio:hover .look-one{transform:rotate(-10deg) rotateY(12deg)}.studio:hover .look-three{transform:rotate(12deg) rotateY(-15deg)}.age-tile:hover{transform:none}}
+  `]
 })
-export class HomeComponent implements OnInit {
-  categories: Category[] = [
-    { name: 'Baby (0-2Y)', image: 'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=600', link: '/catalog', count: 156 },
-    { name: 'Kids (3-8Y)', image: 'https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=600', link: '/catalog', count: 243 },
-    { name: 'Teens (9-17Y)', image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600', link: '/catalog', count: 189 }
+export class HomeComponent {
+  groups = [
+    {name: 'Baby', label: '0–2 years', key: '0-2Y'},
+    {name: 'Little kids', label: '3–5 years', key: '3-5Y'},
+    {name: 'Kids', label: '6–8 years', key: '6-8Y'},
+    {name: 'Juniors', label: '9–11 years', key: '9-11Y'},
+    {name: 'Young teens', label: '12–14 years', key: '12-14Y'},
+    {name: 'Teens', label: '15–17 years', key: '15-17Y'}
   ];
-
-  newProducts: Product[] = [
-    { id: 1, name: 'Cotton Onesie Set (3-Pack)', price: 899, originalPrice: 1199, image: 'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400', ageRange: '0-2 Years', category: 'Baby Wear', badge: 'new', rating: 4.8 },
-    { id: 2, name: 'Playful Dinosaur T-Shirt', price: 549, image: 'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?w=400', ageRange: '3-5 Years', category: 'Tops', badge: 'new', rating: 4.6 },
-    { id: 3, name: 'Denim Overalls', price: 1299, image: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=400', ageRange: '6-8 Years', category: 'Bottoms', badge: 'discount', rating: 4.7 },
-    { id: 4, name: 'Rainbow Hoodie', price: 999, image: 'https://images.unsplash.com/photo-1519238809107-ee8992a1931c?w=400', ageRange: '9-11 Years', category: 'Outerwear', badge: 'new', rating: 4.9 }
-  ];
-
-  saleProducts: Product[] = [
-    { id: 5, name: 'Summer Dress Collection', price: 799, originalPrice: 1499, image: 'https://images.unsplash.com/photo-1621451537084-482c730a5a68?w=400', ageRange: '3-5 Years', category: 'Dresses', badge: 'sale' },
-    { id: 6, name: 'Sports Jersey Set', price: 649, originalPrice: 1099, image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400', ageRange: '6-8 Years', category: 'Activewear', badge: 'sale' },
-    { id: 7, name: 'Winter Jacket', price: 1599, originalPrice: 2499, image: 'https://images.unsplash.com/photo-1608234807905-4466023792f5?w=400', ageRange: '9-11 Years', category: 'Outerwear', badge: 'sale' },
-    { id: 8, name: 'Formal Shirt & Tie', price: 899, originalPrice: 1399, image: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=400', ageRange: '12-14 Years', category: 'Formal', badge: 'sale' }
-  ];
-
-  constructor() {}
-
-  ngOnInit(): void {}
-
-  getDiscountPercent(product: Product): number {
-    if (product.originalPrice && product.price) {
-      return Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
-    }
-    return 0;
-  }
 }
