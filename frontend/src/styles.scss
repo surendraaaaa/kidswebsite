@@ -1,0 +1,101 @@
+:root {
+  /* Brand Specification: Marine Blue, Bright Red, Butter Yellow */
+  --marine-blue: #0047ab;
+  --marine-blue-dark: #003380;
+  --marine-blue-subtle: #f0f4fc;
+  --bright-red: #ff0033;
+  --bright-red-hover: #d6002b;
+  --butter-yellow: #fff14d;
+  --butter-yellow-hover: #fced33;
+  --butter-yellow-subtle: #fffde6;
+
+  /* Commercial Neutrals (80% Whitespace) */
+  --white: #ffffff;
+  --light-gray: #f5f5f5;
+  --border-gray: #e5e5e5;
+  --charcoal: #333333;
+  --muted: #666666;
+
+  /* Semantic Mappings */
+  --primary: var(--bright-red);
+  --primary-hover: var(--bright-red-hover);
+  --secondary: var(--butter-yellow);
+  --dark: var(--charcoal);
+  --light-bg: var(--white);
+  --card-bg: var(--white);
+  --border-subtle: var(--border-gray);
+
+  /* Standard Commercial Shadows (No Neon/Glow) */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-pill: 999px;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--light-bg);
+  color: var(--charcoal);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: 700;
+  color: var(--marine-blue);
+  letter-spacing: -0.01em;
+}
+
+.btn-primary {
+  background: var(--bright-red);
+  color: #ffffff;
+  padding: 0.75rem 1.6rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--bright-red-hover);
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+}
+
+.btn-secondary {
+  background: var(--butter-yellow);
+  color: var(--marine-blue);
+  border: 1px solid rgba(0, 71, 171, 0.2);
+  padding: 0.75rem 1.6rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--butter-yellow-hover);
+  }
+}
