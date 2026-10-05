@@ -1,211 +1,145 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService, Product } from '../../services/api.service';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  ageRange: string;
+  category: string;
+  badge?: 'new' | 'sale' | 'discount';
+  rating?: number;
+  reviewCount?: number;
+  inStock: boolean;
+}
 
 @Component({
   selector: 'app-catalog',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
-    <div class="catalog-page">
-      <div class="catalog-header">
-        <h1>Kids &amp; Family Collection</h1>
-        <p>Designed with generous seam margins and 100% skin-safe cotton linings.</p>
-
-        <!-- Filter Pills -->
-        <div class="filter-pills">
-          <button [class.active]="selectedCat === ''" (click)="filterCat('')">All Designs</button>
-          <button [class.active]="selectedCat === 'kids'" (click)="filterCat('kids')">Kids Outfits</button>
-          <button [class.active]="selectedCat === 'women'" (click)="filterCat('women')">Women's Ethnic</button>
-          <button [class.active]="selectedCat === 'festive-matching'" (click)="filterCat('festive-matching')">Mom & Kid Sets</button>
-        </div>
-      </div>
-
-      <!-- 4 Columns on Desktop, 2 Columns on Mobile -->
-      <div class="products-grid">
-        <div class="product-card" *ngFor="let prod of filteredProducts">
-          <div class="image-box">
-            <img [src]="prod.image_url" [alt]="prod.name" class="prod-img" loading="lazy" />
-            <span class="badge-age">Age 0–8Y</span>
+    <!-- Catalog Header -->
+    <section class="section bg-white">
+      <div class="container">
+        <h1 class="text-center mb-2">Shop All Products</h1>
+        
+        <!-- Filters Bar -->
+        <div class="flex items-center justify-between gap-3 mb-3" style="flex-wrap: wrap;">
+          <!-- Age Filter -->
+          <div class="age-chips">
+            <div class="age-chip" [class.active]="selectedAge === 'all'" (click)="filterByAge('all')">All Ages</div>
+            <div class="age-chip" [class.active]="selectedAge === '0-2Y'" (click)="filterByAge('0-2Y')">0-2 Years</div>
+            <div class="age-chip" [class.active]="selectedAge === '3-5Y'" (click)="filterByAge('3-5Y')">3-5 Years</div>
+            <div class="age-chip" [class.active]="selectedAge === '6-8Y'" (click)="filterByAge('6-8Y')">6-8 Years</div>
+            <div class="age-chip" [class.active]="selectedAge === '9-11Y'" (click)="filterByAge('9-11Y')">9-11 Years</div>
+            <div class="age-chip" [class.active]="selectedAge === '12-14Y'" (click)="filterByAge('12-14Y')">12-14 Years</div>
+            <div class="age-chip" [class.active]="selectedAge === '15-17Y'" (click)="filterByAge('15-17Y')">15-17 Years</div>
           </div>
-
-          <div class="card-details">
-            <div class="card-meta">
-              <span class="category-tag">{{ prod.category | uppercase }}</span>
-              <span class="fabric-tag">100% Cotton</span>
-            </div>
-            <h3>{{ prod.name }}</h3>
-            <p class="desc">{{ prod.description }}</p>
-            <div class="card-bottom">
-              <span class="price">₹{{ prod.price }}</span>
-              <button class="btn-primary add-btn" (click)="addToCart(prod)">Add to Cart</button>
-            </div>
+          
+          <!-- Sort & View -->
+          <div class="flex gap-2 items-center">
+            <select class="btn btn-outline" style="padding: 0.5rem 1rem;">
+              <option>Sort by: Featured</option>
+              <option>Price: Low to High</option>
+              <option>Price: High to Low</option>
+              <option>Newest First</option>
+              <option>Best Selling</option>
+            </select>
           </div>
         </div>
+        
+        <!-- Results Count -->
+        <p class="text-muted">Showing {{ filteredProducts.length }} of {{ products.length }} products</p>
       </div>
-    </div>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="section">
+      <div class="container">
+        <div class="grid grid-4">
+          <div class="product-card" *ngFor="let product of filteredProducts">
+            <div class="product-card__image-container">
+              <img [src]="product.image" [alt]="product.name" class="product-card__image">
+              <div class="product-card__badges">
+                <span class="badge badge-new" *ngIf="product.badge === 'new'">New</span>
+                <span class="badge badge-sale" *ngIf="product.badge === 'sale'">Sale</span>
+                <span class="badge badge-discount" *ngIf="product.badge === 'discount'">-20%</span>
+                <span class="badge badge-sale" *ngIf="!product.inStock" style="background: #6B7280;">Out of Stock</span>
+              </div>
+            </div>
+            <div class="product-card__content">
+              <p class="product-card__category">{{ product.category }}</p>
+              <h3 class="product-card__title">{{ product.name }}</h3>
+              <p class="text-muted mb-1">{{ product.ageRange }}</p>
+              <div class="flex items-center gap-2">
+                <span class="product-card__price">₹{{ product.price }}</span>
+                <span class="product-card__price--original" *ngIf="product.originalPrice">₹{{ product.originalPrice }}</span>
+              </div>
+              <div class="flex items-center gap-1 mt-1" *ngIf="product.rating">
+                <span style="color: #FBBF24;">★</span>
+                <span class="text-muted" style="font-size: 0.875rem;">{{ product.rating }} ({{ product.reviewCount }})</span>
+              </div>
+            </div>
+            <div class="product-card__actions">
+              <button class="btn btn-primary" style="width: 100%;" [disabled]="!product.inStock">
+                {{ product.inStock ? 'Add to Cart' : 'Out of Stock' }}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="text-center mt-4" *ngIf="filteredProducts.length === 0">
+          <h3 class="mb-2">No products found</h3>
+          <p class="text-muted mb-3">Try adjusting your filters or browse all products</p>
+          <button class="btn btn-outline" (click)="filterByAge('all')">Clear Filters</button>
+        </div>
+      </div>
+    </section>
   `,
-  styles: [`
-    .catalog-page { max-width: 1240px; margin: 2rem auto; padding: 0 1.5rem; }
-    .catalog-header { text-align: center; margin-bottom: 2.5rem; }
-    .catalog-header h1 { font-size: 2.4rem; color: var(--marine-blue); margin-bottom: 0.3rem; }
-    .catalog-header p { color: #666666; font-size: 0.95rem; }
-    .filter-pills { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.2rem; flex-wrap: wrap; }
-    .filter-pills button {
-      background: #ffffff; border: 1px solid var(--border-gray); padding: 0.45rem 1.1rem;
-      border-radius: var(--radius-sm); font-weight: 600; font-size: 0.82rem; cursor: pointer;
-      color: var(--marine-blue); transition: all 0.15s ease;
-      &.active, &:hover { background: var(--marine-blue); color: #ffffff; border-color: var(--marine-blue); }
-    }
-    /* 4 columns desktop / 2 columns mobile */
-    .products-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
-    }
-    .product-card {
-      background: #ffffff; border: 1px solid var(--border-gray); border-radius: var(--radius-md);
-      overflow: hidden; display: flex; flex-direction: column;
-    }
-    .image-box { position: relative; height: 260px; background: #f9f9f9; }
-    .prod-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .badge-age {
-      position: absolute; bottom: 8px; left: 8px; background: var(--butter-yellow);
-      color: var(--marine-blue); font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem;
-      border-radius: var(--radius-sm);
-    }
-    .card-details { padding: 1.1rem; display: flex; flex-direction: column; flex-grow: 1; }
-    .card-meta { display: flex; justify-content: space-between; margin-bottom: 0.3rem; }
-    .category-tag { font-size: 0.68rem; font-weight: 800; color: var(--marine-blue); }
-    .fabric-tag { font-size: 0.68rem; color: #666666; }
-    .card-details h3 { font-size: 1.05rem; margin-bottom: 0.3rem; color: var(--marine-blue); }
-    .desc { font-size: 0.82rem; color: #666666; margin-bottom: 0.9rem; flex-grow: 1; }
-    .card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-    .price { font-size: 1.15rem; font-weight: 800; color: var(--marine-blue); }
-    .add-btn { padding: 0.5rem 0.9rem; font-size: 0.82rem; }
-
-    @media (max-width: 850px) {
-      .products-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-      .image-box { height: 190px; }
-    }
-  `]
+  styles: []
 })
 export class CatalogComponent implements OnInit {
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
-  selectedCat = '';
-
-  // Interactive Stage & 360° scrubbing state
-  activeZoomId: number | null = null;
-  zoomX = 0;
-  zoomY = 0;
-  lensBgPos = '0% 0%';
-  selectedAngleMap: Record<number, number> = {};
-
-  readonly angleViews = [
-    { label: '0° Front', suffix: '' },
-    { label: '45° Angle', suffix: '&fit=crop&crop=faces' },
-    { label: 'Macro Texture', suffix: '&fit=crop&crop=bottom' },
-    { label: '180° Back', suffix: '&fit=crop&crop=top' }
+  selectedAge: string = 'all';
+  
+  products: Product[] = [
+    { id: 1, name: 'Cotton Onesie Set (3-Pack)', price: 899, originalPrice: 1199, image: 'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400', ageRange: '0-2 Years', category: 'Baby Wear', badge: 'new', rating: 4.8, reviewCount: 124, inStock: true },
+    { id: 2, name: 'Playful Dinosaur T-Shirt', price: 549, image: 'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?w=400', ageRange: '3-5 Years', category: 'Tops', badge: 'new', rating: 4.6, reviewCount: 89, inStock: true },
+    { id: 3, name: 'Denim Overalls', price: 1299, image: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=400', ageRange: '6-8 Years', category: 'Bottoms', badge: 'discount', rating: 4.7, reviewCount: 156, inStock: true },
+    { id: 4, name: 'Rainbow Hoodie', price: 999, image: 'https://images.unsplash.com/photo-1519238809107-ee8992a1931c?w=400', ageRange: '9-11 Years', category: 'Outerwear', badge: 'new', rating: 4.9, reviewCount: 201, inStock: true },
+    { id: 5, name: 'Summer Dress Collection', price: 799, originalPrice: 1499, image: 'https://images.unsplash.com/photo-1621451537084-482c730a5a68?w=400', ageRange: '3-5 Years', category: 'Dresses', badge: 'sale', rating: 4.5, reviewCount: 78, inStock: true },
+    { id: 6, name: 'Sports Jersey Set', price: 649, originalPrice: 1099, image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400', ageRange: '6-8 Years', category: 'Activewear', badge: 'sale', rating: 4.4, reviewCount: 92, inStock: true },
+    { id: 7, name: 'Winter Jacket', price: 1599, originalPrice: 2499, image: 'https://images.unsplash.com/photo-1608234807905-4466023792f5?w=400', ageRange: '9-11 Years', category: 'Outerwear', badge: 'sale', rating: 4.8, reviewCount: 167, inStock: true },
+    { id: 8, name: 'Formal Shirt & Tie', price: 899, originalPrice: 1399, image: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=400', ageRange: '12-14 Years', category: 'Formal', badge: 'sale', rating: 4.6, reviewCount: 54, inStock: true },
+    { id: 9, name: 'Casual Jeans', price: 1099, image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400', ageRange: '12-14 Years', category: 'Bottoms', rating: 4.7, reviewCount: 143, inStock: true },
+    { id: 10, name: 'Graphic Tee', price: 449, image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400', ageRange: '15-17 Years', category: 'Tops', rating: 4.5, reviewCount: 87, inStock: true },
+    { id: 11, name: 'Baby Romper', price: 599, image: 'https://images.unsplash.com/photo-1555529733-0e670560f7e1?w=400', ageRange: '0-2 Years', category: 'Baby Wear', rating: 4.9, reviewCount: 234, inStock: true },
+    { id: 12, name: 'Kids Sneakers', price: 1299, image: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?w=400', ageRange: '6-8 Years', category: 'Footwear', rating: 4.6, reviewCount: 112, inStock: true }
   ];
 
-  constructor(private api: ApiService) {}
+  filteredProducts: Product[] = [];
 
-  ngOnInit() {
-    this.api.getProducts().subscribe({
-      next: (data) => {
-        this.products = data;
-        this.filteredProducts = data;
-      },
-      error: () => {
-        // Fallback demo data
-        this.products = [
-          {
-            id: 1,
-            name: 'Kids Embroidered Silk Lehenga',
-            category: 'kids',
-            price: 1499,
-            stock: 15,
-            image_url: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=600&q=80',
-            description: 'Pure chanderi silk lehenga with hand-embroidered border for ages 2-10.'
-          },
-          {
-            id: 2,
-            name: 'Mom & Daughter Festive Co-ord Set',
-            category: 'festive-matching',
-            price: 3499,
-            stock: 8,
-            image_url: 'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?auto=format&fit=crop&w=600&q=80',
-            description: 'Coordinated peach georgette anarkali set for celebrations and family portraits.'
-          },
-          {
-            id: 3,
-            name: 'Floral Handblock Pure Cotton Frock',
-            category: 'kids',
-            price: 899,
-            stock: 25,
-            image_url: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=600&q=80',
-            description: 'Skin-friendly organic cotton frock with natural vegetable dyes for all-day play.'
-          },
-          {
-            id: 4,
-            name: 'Designer Georgette Straight Kurti',
-            category: 'women',
-            price: 1899,
-            stock: 12,
-            image_url: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=600&q=80',
-            description: 'Elegant mirror-work detailing with premium cotton lining, tailored for festive gatherings.'
-          }
-        ];
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['age']) {
+        this.filterByAge(params['age']);
+      } else {
         this.filteredProducts = this.products;
       }
     });
   }
 
-  filterCat(cat: string) {
-    this.selectedCat = cat;
-    if (!cat) {
+  filterByAge(age: string): void {
+    this.selectedAge = age;
+    if (age === 'all') {
       this.filteredProducts = this.products;
     } else {
-      this.filteredProducts = this.products.filter(p => p.category === cat);
+      this.filteredProducts = this.products.filter(p => p.ageRange.includes(age.replace('Y', ' Years')));
     }
-  }
-
-  onMouseMove(event: MouseEvent, prodId: number) {
-    const target = event.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    this.activeZoomId = prodId;
-    this.zoomX = event.clientX - rect.left;
-    this.zoomY = event.clientY - rect.top;
-
-    const xPercent = (this.zoomX / rect.width) * 100;
-    const yPercent = (this.zoomY / rect.height) * 100;
-    this.lensBgPos = `${xPercent}% ${yPercent}%`;
-  }
-
-  onMouseLeave(prodId: number) {
-    if (this.activeZoomId === prodId) {
-      this.activeZoomId = null;
-    }
-  }
-
-  setActiveAngle(prodId: number, index: number) {
-    this.selectedAngleMap[prodId] = index;
-  }
-
-  getActiveIndex(prodId: number): number {
-    return this.selectedAngleMap[prodId] || 0;
-  }
-
-  getActiveImage(prod: Product): string {
-    const idx = this.getActiveIndex(prod.id);
-    return prod.image_url + this.angleViews[idx].suffix;
-  }
-
-  getActiveAngleLabel(prodId: number): string {
-    return this.angleViews[this.getActiveIndex(prodId)].label;
-  }
-
-  addToCart(prod: Product) {
-    this.api.addToCart(prod);
-    alert(`Added "${prod.name}" to your cart!`);
   }
 }
