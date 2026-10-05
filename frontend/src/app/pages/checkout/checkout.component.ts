@@ -1,231 +1,39 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { ApiService, CartItem } from '../../services/api.service';
 
 @Component({
-  selector: 'app-checkout',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  selector: 'app-checkout', standalone: true, imports: [CommonModule],
   template: `
-    <div class="checkout-wrapper">
-      <!-- Top Trust Header Strip -->
-      <div class="trust-header-bar">
-        <div class="trust-badge-group">
-          <span>🔒 256-Bit SSL Encrypted</span>
-          <span>🛡️ PCI-DSS Compliant</span>
-          <span>⚡ 3D Secure 2.0 Enabled</span>
-        </div>
+    <section class="checkout">
+      <div class="co-head"><p class="eyebrow">CHECKOUT</p><h1>Almost there</h1></div>
+      <div class="co-grid">
+        <form class="co-form">
+          <h3>Contact</h3>
+          <div class="field"><label>Email</label><input type="email" placeholder="you@example.com"></div>
+          <h3>Shipping</h3>
+          <div class="row2"><div class="field"><label>First name</label><input placeholder="Aarav"></div><div class="field"><label>Last name</label><input placeholder="Sharma"></div></div>
+          <div class="field"><label>Address</label><input placeholder="123, Main Street"></div>
+          <div class="row2"><div class="field"><label>City</label><input placeholder="Mumbai"></div><div class="field"><label>PIN</label><input placeholder="400001"></div></div>
+          <div class="field"><label>Phone</label><input type="tel" placeholder="+91 98765 43210"></div>
+          <h3>Payment</h3>
+          <div class="pay-methods"><label class="pm"><input type="radio" name="pay" checked><span>UPI</span></label><label class="pm"><input type="radio" name="pay"><span>Card</span></label><label class="pm"><input type="radio" name="pay"><span>BHIM</span></label><label class="pm"><input type="radio" name="pay"><span>Net Banking</span></label></div>
+          <div class="pay-note">Payments are processed securely via Razorpay. This is a demo — no real charge will be made.</div>
+          <button class="pay-btn">Pay ₹1,997</button>
+          <p class="co-trust">🔒 SSL secured • 3D Secure enabled</p>
+        </form>
+        <aside class="co-summary">
+          <h3>Order summary</h3>
+          <div class="sr"><img src="https://images.unsplash.com/photo-1522771930-78848d9293e8?w=120"><div><p class="sr-name">Cotton Onesie Set (3-Pack)</p><p class="sr-meta">Size 3-4Y • Qty 1</p></div><span>₹899</span></div>
+          <div class="sr"><img src="https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?w=120"><div><p class="sr-name">Playful Dinosaur T-Shirt</p><p class="sr-meta">Size 4-5Y • Qty 2</p></div><span>₹1,098</span></div>
+          <div class="sr-row"><span>Subtotal</span><span>₹1,997</span></div>
+          <div class="sr-row"><span>Shipping</span><span class="green">Free</span></div>
+          <div class="sr-row total"><span>Total</span><span>₹1,997</span></div>
+        </aside>
       </div>
-      <h1>Secure Checkout</h1>
-
-      <div class="checkout-grid" *ngIf="items.length > 0; else emptyCart">
-        <!-- Delivery and Payment Form -->
-        <div class="form-card">
-          <h2>1. Shipping Address in India</h2>
-          <form [formGroup]="checkoutForm" (ngSubmit)="placeOrder()">
-            <div class="form-group">
-              <label>Full Name *</label>
-              <input formControlName="customer_name" placeholder="E.g., Pooja Sharma" />
-            </div>
-
-            <div class="form-group">
-              <label>Contact Phone (WhatsApp enabled for updates) *</label>
-              <input formControlName="phone" placeholder="9876543210" />
-            </div>
-
-            <div class="form-group">
-              <label>Address *</label>
-              <textarea formControlName="address" rows="2" placeholder="House/Flat No, Apartment, Street Area"></textarea>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>City / Town *</label>
-                <input formControlName="city" placeholder="Ahmedabad" />
-              </div>
-
-              <div class="form-group">
-                <label>Pincode (6-Digits) *</label>
-                <input formControlName="pincode" placeholder="380015" />
-              </div>
-            </div>
-
-            <h2 class="mt-4">2. Payment Method (India)</h2>
-            <div class="payment-methods">
-              <label class="pay-option">
-                <input type="radio" formControlName="payment_method" value="UPI" />
-                <div class="pay-info">
-                  <strong>UPI (Instant & Contactless)</strong>
-                  <span>Pay via Google Pay, PhonePe, Paytm, or BHIM directly</span>
-                </div>
-              </label>
-
-              <label class="pay-option">
-                <input type="radio" formControlName="payment_method" value="RAZORPAY" />
-                <div class="pay-info">
-                  <strong>Debit/Credit Cards & NetBanking</strong>
-                  <span>Supports Visa, MasterCard, RuPay & Indian Netbanking</span>
-                </div>
-              </label>
-
-              <label class="pay-option">
-                <input type="radio" formControlName="payment_method" value="COD" />
-                <div class="pay-info">
-                  <strong>Cash On Delivery (COD)</strong>
-                  <span>Pay cash to the courier representative upon delivery</span>
-                </div>
-              </label>
-            </div>
-
-            <button type="submit" [disabled]="checkoutForm.invalid || isSubmitting" class="btn-primary w-100">
-              {{ isSubmitting ? 'Placing Order...' : 'Confirm Order • ₹' + totalAmount }}
-            </button>
-          </form>
-        </div>
-
-        <!-- Order Summary -->
-        <div class="summary-card">
-          <h2>Order Summary ({{ items.length }} items)</h2>
-          <div class="item-list">
-            <div class="summary-item" *ngFor="let it of items">
-              <div>
-                <strong>{{ it.name }}</strong>
-                <p>Qty: {{ it.quantity }} × ₹{{ it.price }}</p>
-              </div>
-              <span class="item-total">₹{{ it.price * it.quantity }}</span>
-            </div>
-          </div>
-
-          <div class="summary-breakdown">
-            <div class="row">
-              <span>Subtotal</span>
-              <span>₹{{ totalAmount }}</span>
-            </div>
-            <div class="row">
-              <span>Delivery Charges</span>
-              <span class="free">FREE across India</span>
-            </div>
-            <hr />
-            <div class="row grand-total">
-              <span>Total Payable</span>
-              <span>₹{{ totalAmount }}</span>
-            </div>
-          </div>
-
-          <div class="guarantee-box">
-            <p>🛡️ Handcrafted and quality checked at Krishiv Creation</p>
-            <p>🔁 7-day hassle-free size alteration guarantee</p>
-            <p>📦 Shipped in tamper-proof, biodegradable packaging</p>
-          </div>
-        </div>
-      </div>
-
-      <ng-template #emptyCart>
-        <div class="empty-state">
-          <p>Your shopping cart is currently empty.</p>
-          <a routerLink="/catalog" class="btn-primary">Browse Collections</a>
-        </div>
-      </ng-template>
-    </div>
+    </section>
   `,
   styles: [`
-    .checkout-wrapper { max-width: 1140px; margin: 2rem auto; padding: 0 1.5rem; }
-    .trust-header-bar {
-      background: var(--marine-blue-subtle); padding: 0.6rem 1rem; border-radius: var(--radius-sm);
-      margin-bottom: 1.5rem; border: 1px solid rgba(0, 71, 171, 0.15);
-    }
-    .trust-badge-group { display: flex; gap: 1.5rem; font-size: 0.78rem; font-weight: 700; color: var(--marine-blue); flex-wrap: wrap; }
-    h1 { font-size: 2.2rem; margin-bottom: 1.5rem; color: var(--marine-blue); }
-    .checkout-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 2.5rem; }
-    .form-card, .summary-card {
-      background: #ffffff; padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-gray);
-    }
-    h2 { font-size: 1.3rem; margin-bottom: 1.2rem; }
-    .form-group { display: flex; flex-direction: column; margin-bottom: 1rem; }
-    .form-row { display: flex; gap: 1rem; }
-    .form-row .form-group { flex: 1; }
-    label { font-size: 0.85rem; font-weight: 700; color: var(--marine-blue); margin-bottom: 0.3rem; }
-    input, textarea {
-      padding: 0.75rem 0.9rem; border: 1px solid var(--border-gray); border-radius: var(--radius-sm); font-size: 0.95rem;
-      &:focus { outline: none; border-color: var(--marine-blue); }
-    }
-    .payment-methods { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem; }
-    .pay-option {
-      display: flex; gap: 1rem; align-items: center; padding: 0.85rem 1rem;
-      border: 1px solid var(--border-gray); border-radius: var(--radius-sm); cursor: pointer;
-      &:hover { border-color: var(--marine-blue); }
-    }
-    .pay-info strong { display: block; font-size: 0.95rem; }
-    .pay-info span { font-size: 0.8rem; color: #666666; }
-    .w-100 { width: 100%; justify-content: center; }
-    .mt-4 { margin-top: 1.5rem; }
-    .item-list { border-bottom: 1px solid var(--border-gray); padding-bottom: 1rem; margin-bottom: 1rem; }
-    .summary-item { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.9rem; }
-    .summary-item p { color: #666666; font-size: 0.8rem; }
-    .item-total { font-weight: 700; }
-    .summary-breakdown .row { display: flex; justify-content: space-between; margin-bottom: 0.6rem; font-size: 0.95rem; }
-    .free { color: #10b981; font-weight: 700; }
-    .grand-total { font-size: 1.25rem !important; font-weight: 800; color: var(--marine-blue); margin-top: 0.5rem; }
-    .guarantee-box {
-      margin-top: 1.5rem; background: #fafafa; padding: 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: #555555;
-      p { margin-bottom: 0.4rem; }
-    }
-    .empty-state { text-align: center; padding: 4rem 1rem; p { font-size: 1.2rem; margin-bottom: 1.5rem; } }
-    @media (max-width: 850px) {
-      .checkout-grid { grid-template-columns: 1fr; }
-    }
+    .checkout{max-width:1200px;margin:auto;padding:48px 48px 80px}.co-head{margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:2px;font-weight:700;color:#123653;margin:0 0 10px}.checkout h1{font-size:clamp(28px,3vw,40px);letter-spacing:-1px;color:#123653;margin:0}.co-grid{display:grid;grid-template-columns:1fr 360px;gap:32px}@media(max-width:900px){.co-grid{grid-template-columns:1fr}.checkout{padding:32px 20px 40px}}.co-form{background:#f7f9fb;border-radius:10px;padding:20px}.co-form h3{font-size:15px;color:#123653;margin:18px 0 10px}.field{margin-bottom:12px}.field label{display:block;font-size:12px;color:#4a6071;margin:0 0 6px}.field input{width:100%;padding:10px 12px;border:1px solid #d9e2ea;border-radius:6px;font-size:14px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pay-methods{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}.pm{display:flex;align-items:center;gap:8px;border:1px solid #d9e2ea;border-radius:6px;padding:8px 10px;font-size:12px;color:#4a6071;cursor:pointer}.pm input{accent-color:#123653}.pay-note{font-size:11px;color:#6b7280;margin:10px 0}.pay-btn{width:100%;background:#123653;color:#fff;border:0;padding:12px;border-radius:6px;font-weight:800;cursor:pointer}.co-trust{font-size:11px;color:#6b7280;text-align:center;margin-top:10px}.co-summary{background:#fff;border:1px solid #eef2f6;border-radius:10px;padding:20px;align-self:start}.co-summary h3{font-size:15px;color:#123653;margin:0 0 14px}.sr{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed #eef2f6}.sr img{width:60px;height:75px;object-fit:cover;border-radius:6px;background:#f7f9fb}.sr-name{font-size:13px;font-weight:700;color:#123653;margin:0 0 2px}.sr-meta{font-size:11px;color:#6b7280;margin:0}.sr-row{display:flex;justify-content:space-between;font-size:13px;color:#4a6071;padding:8px 0}.sr-row.total{border:0;font-size:15px;font-weight:800;color:#123653}.green{color:#10b981;font-weight:700}
   `]
 })
-export class CheckoutComponent {
-  items: CartItem[] = [];
-  checkoutForm: FormGroup;
-  isSubmitting = false;
-
-  constructor(private fb: FormBuilder, private api: ApiService) {
-    this.items = this.api.getCartSnapshot();
-
-    this.checkoutForm = this.fb.group({
-      customer_name: ['', Validators.required],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
-      address: ['', Validators.required],
-      city: ['', Validators.required],
-      pincode: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]],
-      payment_method: ['UPI', Validators.required]
-    });
-  }
-
-  get totalAmount(): number {
-    return this.items.reduce((sum, it) => sum + it.price * it.quantity, 0);
-  }
-
-  placeOrder() {
-    if (this.checkoutForm.invalid) return;
-    this.isSubmitting = true;
-
-    const payload = {
-      ...this.checkoutForm.value,
-      total_amount: this.totalAmount,
-      items: this.items.map(it => ({
-        product_id: it.id,
-        name: it.name,
-        quantity: it.quantity,
-        price: it.price
-      }))
-    };
-
-    this.api.submitOrder(payload).subscribe({
-      next: (res: any) => {
-        this.isSubmitting = false;
-        alert(`Order confirmed! Your order reference is ${res.order_id}. Krishiv Creation team will contact you for shipping updates.`);
-        this.api.clearCart();
-        this.items = [];
-      },
-      error: () => {
-        this.isSubmitting = false;
-        alert('Order created locally. We will confirm your details over phone/WhatsApp.');
-      }
-    });
-  }
-}
+export class CheckoutComponent {}
