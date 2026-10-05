@@ -1,0 +1,17 @@
+# 1. Start PostgreSQL (you already did this ✅)
+docker run --name postgres-kc \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=krishiv_creation \
+  -p 5432:5432 \
+  -d postgres:16
+
+# 2. Start frontend (Terminal 1)
+cd frontend
+npm install
+ng serve
+
+# 3. Start backend (Terminal 2)
+cd backend
+go mod download
+export DB_HOST=localhost DB_PORT=5432 DB_USER=postgres DB_PASSWORD=postgres DB_NAME=krishiv_creation
+go run cmd/main.go
