@@ -1,341 +1,221 @@
-import { Component, EventEmitter, HostListener, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { ApiService } from '../../services/api.service';
+import { RouterLink } from '@angular/router';
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  images?: string[];
+  ageRange: string;
+  category: string;
+  badge?: 'new' | 'sale' | 'discount';
+  rating?: number;
+  reviewCount?: number;
+}
+
+interface Category {
+  name: string;
+  image: string;
+  link: string;
+  count?: number;
+}
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterLink],
   template: `
-    <!-- Futuristic Diagonal Hero (Marine Blue -> Bright Red) -->
-    <section class="hero-diagonal" (mousemove)="onMouseMove($event)">
-      <div class="hero-container">
-        <div class="hero-text">
-          <div class="hero-badge-wrap">
-            <span class="holographic-badge">✦ FUTURE COUTURE // ATELIER 2026</span>
-          </div>
-          <h1>Architectural Precision for Kids &amp; Women</h1>
-          <p>
-            Ultra-soft organic muslin linings, zero-friction seams, and statement Indian ethnic apparel.
-            Designed with growth margins for active kids and tailored elegance for mothers.
-          </p>
+    <!-- Sale Banner -->
+    <div class="sale-banner">
+      🎉 Grand Opening Sale! Get 20% Off on First Order - Use Code: WELCOME20 | <a href="/catalog">Shop Now →</a>
+    </div>
 
-          <!-- Instant Age-Group Filter Visual Chips -->
-          <div class="age-filter-section">
-            <span class="filter-label">Filter by Child's Age:</span>
-            <div class="age-chips">
-              <button *ngFor="let age of ageGroups"
-                      [class.active]="selectedAge === age"
-                      (click)="setAgeFilter(age)"
-                      class="chip-btn">
-                {{ age }}
-              </button>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <h1>Style & Comfort for Your Little Ones</h1>
+        <p>Premium quality kids clothing with safe, breathable fabrics. Designed for play, made for comfort.</p>
+        <div class="flex gap-2 justify-center mt-3">
+          <button class="btn btn-primary" routerLink="/catalog">Shop Collection</button>
+          <button class="btn btn-outline" routerLink="/about">Our Story</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Age Filter Chips -->
+    <section class="section section--sm bg-white">
+      <div class="container">
+        <div class="age-chips">
+          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '0-2Y'}">0-2 Years</div>
+          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '3-5Y'}">3-5 Years</div>
+          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '6-8Y'}">6-8 Years</div>
+          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '9-11Y'}">9-11 Years</div>
+          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '12-14Y'}">12-14 Years</div>
+          <div class="age-chip" routerLink="/catalog" [queryParams]="{age: '15-17Y'}">15-17 Years</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="section">
+      <div class="container">
+        <div class="section-title">
+          <span class="section-title__subtitle">Browse By</span>
+          <h2 class="section-title__title">Shop Categories</h2>
+        </div>
+        <div class="grid grid-3">
+          <div class="category-card" *ngFor="let category of categories" [routerLink]="category.link">
+            <img [src]="category.image" [alt]="category.name" class="category-card__image">
+            <div class="category-card__overlay"></div>
+            <div class="category-card__content">
+              <h3 class="category-card__title">{{ category.name }}</h3>
+              <p class="text-muted">{{ category.count }} Products</p>
             </div>
           </div>
-
-          <div class="hero-btn-group">
-            <a routerLink="/catalog" class="btn-primary">Shop Instant Collection 🛍️</a>
-            <button class="btn-secondary" (click)="handleQuoteClick()">Custom Atelier Fitting ✂</button>
-          </div>
         </div>
+      </div>
+    </section>
 
-        <!-- Interactive 3D Parallax Floating Stage -->
-        <div class="hero-3d-stage" [style.transform]="parallaxTransform">
-          <div class="card-glow"></div>
-          <div class="floating-showcase">
-            <img src="https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?auto=format&fit=crop&w=800&q=80"
-                 alt="Krishiv Creation Atelier Piece"
-                 class="hero-img" />
-            <div class="floating-overlay-card">
-              <span class="tag">Selected Filter</span>
-              <strong>{{ selectedAge === 'All' ? 'Curated Festive Edit' : selectedAge + ' Precision Sizing' }}</strong>
+    <!-- New Arrivals -->
+    <section class="section bg-white">
+      <div class="container">
+        <div class="section-title">
+          <span class="section-title__subtitle">Fresh Styles</span>
+          <h2 class="section-title__title">New Arrivals</h2>
+        </div>
+        <div class="grid grid-4">
+          <div class="product-card" *ngFor="let product of newProducts">
+            <div class="product-card__image-container">
+              <img [src]="product.image" [alt]="product.name" class="product-card__image">
+              <div class="product-card__badges">
+                <span class="badge badge-new" *ngIf="product.badge === 'new'">New</span>
+                <span class="badge badge-sale" *ngIf="product.badge === 'sale'">Sale</span>
+                <span class="badge badge-discount" *ngIf="product.badge === 'discount'">-20%</span>
+              </div>
+            </div>
+            <div class="product-card__content">
+              <p class="product-card__category">{{ product.category }}</p>
+              <h3 class="product-card__title">{{ product.name }}</h3>
+              <p class="text-muted mb-1">{{ product.ageRange }}</p>
+              <div class="flex items-center gap-2">
+                <span class="product-card__price">₹{{ product.price }}</span>
+                <span class="product-card__price--original" *ngIf="product.originalPrice">₹{{ product.originalPrice }}</span>
+              </div>
+            </div>
+            <div class="product-card__actions">
+              <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
             </div>
           </div>
-          <div class="floating-pill pill-top">
-            <span class="dot-red"></span> 100% Soft Breathable Cotton
-          </div>
-          <div class="floating-pill pill-bottom">
-            <span class="badge-yellow">⚡</span> 48h Urgent Atelier Dispatch
-          </div>
+        </div>
+        <div class="text-center mt-3">
+          <button class="btn btn-outline btn-lg" routerLink="/catalog">View All Products</button>
         </div>
       </div>
     </section>
 
-    <!-- Fabric & Safety Micro-Badges -->
-    <section class="safety-ribbon">
-      <div class="safety-grid">
-        <div class="safety-badge">
-          <span class="icon">🌿</span>
-          <div class="badge-text">
-            <strong>100% Breathable Cotton</strong>
-            <span>Pre-washed natural organic fibers</span>
-          </div>
+    <!-- Sale & Clearance -->
+    <section class="section">
+      <div class="container">
+        <div class="section-title">
+          <span class="section-title__subtitle">Limited Stock</span>
+          <h2 class="section-title__title">Sale & Clearance</h2>
         </div>
-        <div class="safety-badge">
-          <span class="icon">🌸</span>
-          <div class="badge-text">
-            <strong>Hypoallergenic Dyes</strong>
-            <span>Certified non-toxic, gentle on infant skin</span>
-          </div>
-        </div>
-        <div class="safety-badge">
-          <span class="icon">🏷️</span>
-          <div class="badge-text">
-            <strong>Tagless Comfort</strong>
-            <span>Zero-scratch heat-sealed labels</span>
-          </div>
-        </div>
-        <div class="safety-badge">
-          <span class="icon">🔒</span>
-          <div class="badge-text">
-            <strong>Nickel-Free Hardware</strong>
-            <span>Safe rust-proof snaps & smooth zippers</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Services Highlights -->
-    <section class="services-highlight">
-      <div class="section-title">
-        <h2>Our Core Tailoring Services</h2>
-        <p>Every piece is uniquely measured, hand-cut, and detailed.</p>
-      </div>
-
-      <div class="service-grid">
-        <div class="service-box">
-          <img src="https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=600&q=80" alt="Kids Ethnic Wear" />
-          <div class="box-content">
-            <h4>Kids Festive Lehengas & Kurta Sets</h4>
-            <p>Traditional Indian patterns crafted with lightweight materials easy for children to move in.</p>
-          </div>
-        </div>
-
-        <div class="service-box">
-          <img src="https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=600&q=80" alt="Women Tailoring" />
-          <div class="box-content">
-            <h4>Women's Designer Kurtis & Sarees</h4>
-            <p>Precise necklines, padded blouses, and custom festive suits tailored to your comfort.</p>
-          </div>
-        </div>
-
-        <div class="service-box">
-          <img src="https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=600&q=80" alt="Mom and Daughter Matching" />
-          <div class="box-content">
-            <h4>Mom & Daughter Matching Sets</h4>
-            <p>Matching festival & photoshoot co-ords that make every occasion memorable.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Photo Reviews with Child Measurements -->
-    <section class="reviews-section">
-      <div class="section-title">
-        <h2>Real Families, Exact Fits</h2>
-        <p>Verified purchase reviews featuring child measurements for sizing confidence.</p>
-      </div>
-
-      <div class="reviews-grid">
-        <div class="review-frame" *ngFor="let rev of photoReviews">
-          <div class="photo-wrapper">
-            <img [src]="rev.photo" [alt]="rev.productName" />
-            <span class="verified-badge">✓ Verified Family</span>
-          </div>
-          <div class="review-content">
-            <div class="measurements-pill">
-              <span><strong>Age:</strong> {{ rev.age }}</span>
-              <span><strong>Weight:</strong> {{ rev.weight }}</span>
-              <span><strong>Height:</strong> {{ rev.height }}</span>
+        <div class="grid grid-4">
+          <div class="product-card" *ngFor="let product of saleProducts">
+            <div class="product-card__image-container">
+              <img [src]="product.image" [alt]="product.name" class="product-card__image">
+              <div class="product-card__badges">
+                <span class="badge badge-sale">Sale</span>
+                <span class="badge badge-discount">-{{ getDiscountPercent(product) }}%</span>
+              </div>
             </div>
-            <h4>{{ rev.productName }}</h4>
-            <p class="size-tag">Size Ordered: <strong>{{ rev.sizePurchased }}</strong></p>
-            <p class="comment">"{{ rev.comment }}"</p>
-            <span class="author">— {{ rev.author }}, {{ rev.city }}</span>
+            <div class="product-card__content">
+              <p class="product-card__category">{{ product.category }}</p>
+              <h3 class="product-card__title">{{ product.name }}</h3>
+              <p class="text-muted mb-1">{{ product.ageRange }}</p>
+              <div class="flex items-center gap-2">
+                <span class="product-card__price text-danger">₹{{ product.price }}</span>
+                <span class="product-card__price--original">₹{{ product.originalPrice }}</span>
+              </div>
+            </div>
+            <div class="product-card__actions">
+              <button class="btn btn-primary" style="width: 100%;">Add to Cart</button>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Visit & Google Maps Section -->
-    <section class="location-section">
-      <div class="loc-text">
-        <h2>Visit Our Local Boutique</h2>
-        <p>Feel the fabrics, view sample stitch books, or bring your children for custom measurements.</p>
-        <div class="loc-box brand-accent-box">
-          <p><strong>Shop Name:</strong> Krishiv Creation</p>
-          <p><strong>Address:</strong> Shop No. 4, Ground Floor, Royal Market, Near Station Road, India</p>
-          <p><strong>Opening Hours:</strong> 10:30 AM – 8:30 PM (Mon to Sat)</p>
-          <p><strong>Instant Contact:</strong> +91 98765 43210</p>
+    <!-- Trust Section -->
+    <section class="trust-section">
+      <div class="container">
+        <div class="trust-section__grid">
+          <div class="trust-section__item">
+            <svg class="trust-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <h4 class="trust-section__title">100% Secure Checkout</h4>
+            <p class="trust-section__description">PCI DSS compliant with Razorpay</p>
+          </div>
+          <div class="trust-section__item">
+            <svg class="trust-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            <h4 class="trust-section__title">Free Shipping</h4>
+            <p class="trust-section__description">On orders above ₹499</p>
+          </div>
+          <div class="trust-section__item">
+            <svg class="trust-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <h4 class="trust-section__title">Easy Returns</h4>
+            <p class="trust-section__description">30-day hassle-free returns</p>
+          </div>
+          <div class="trust-section__item">
+            <svg class="trust-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h4 class="trust-section__title">Safe Materials</h4>
+            <p class="trust-section__description">Hypoallergenic, kid-safe fabrics</p>
+          </div>
         </div>
-        <div class="mt-4">
-          <a href="tel:+919876543210" class="btn-primary">Call Store Now</a>
-        </div>
-      </div>
-
-      <div class="map-wrapper">
-        <iframe
-          title="Krishiv Creation Location Map"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14686.790938644383!2d72.571362!3d23.033863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e848aba5bd449%3A0x4fcedd11614f6516!2sAhmedabad%2C%20Gujarat!5e0!3m2!1sen!2sin!4v1700000000000"
-          width="100%"
-          height="350"
-          style="border:0; border-radius: 16px;"
-          loading="lazy">
-        </iframe>
       </div>
     </section>
   `,
-  styles: [`
-    .hero {
-      display: grid; grid-template-columns: 1.2fr 1fr; gap: 3rem; align-items: center;
-      max-width: 1240px; margin: 2rem auto; padding: 3rem 1.5rem;
-    }
-    .cyber-badge-wrap { margin-bottom: 1.2rem; }
-    .hero-tag {
-      background: var(--marine-blue); color: var(--butter-yellow); padding: 0.45rem 1.1rem;
-      border-radius: 999px; font-weight: 800; font-size: 0.74rem; letter-spacing: 0.12em;
-      display: inline-block; border: 1px solid rgba(254, 234, 154, 0.2);
-    }
-    .hero-text h1 { font-size: 3.2rem; line-height: 1.12; margin-bottom: 1.2rem; color: var(--marine-blue); }
-    .hero-text p { font-size: 1.1rem; color: #475569; margin-bottom: 2rem; max-width: 520px; line-height: 1.7; }
-    .hero-btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }
-
-    /* 3D Floating Scene */
-    .hero-3d-scene {
-      position: relative;
-      perspective: 1200px;
-    }
-    .hologram-glow {
-      position: absolute; inset: 10%; background: radial-gradient(circle, rgba(254, 234, 154, 0.35) 0%, rgba(255, 26, 42, 0.15) 60%, transparent 80%);
-      filter: blur(40px); z-index: 0; pointer-events: none;
-    }
-    .floating-card {
-      position: relative; z-index: 1; border-radius: 28px; overflow: hidden;
-      box-shadow: var(--shadow-3d); border: 2px solid rgba(255, 255, 255, 0.8);
-      animation: float-slow 6s ease-in-out infinite;
-      transform: rotateY(-6deg) rotateX(4deg);
-      transition: transform 0.4s ease;
-      &:hover { transform: rotateY(0deg) rotateX(0deg) scale(1.02); }
-    }
-    .hero-img { width: 100%; height: 460px; object-fit: cover; display: block; }
-    .chip {
-      position: absolute; z-index: 2; background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px); padding: 0.6rem 1.1rem; border-radius: 999px;
-      font-size: 0.82rem; font-weight: 700; color: var(--dark); display: flex;
-      align-items: center; gap: 0.5rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-    }
-    .chip-1 {
-      top: 15px; right: -15px; border: 1px solid var(--butter-yellow);
-      animation: float-reverse 5s ease-in-out infinite;
-    }
-    .chip-2 {
-      bottom: 25px; left: -20px; border: 1px solid var(--bright-red);
-      animation: float-slow 7s ease-in-out infinite;
-    }
-    .chip-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bright-red); }
-
-    .pillars {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
-      max-width: 1240px; margin: 3rem auto; padding: 0 1.5rem;
-    }
-    .pillar-card {
-      background: var(--card-bg); backdrop-filter: blur(10px); padding: 2.2rem 2rem; border-radius: 20px;
-      border: 1px solid var(--border-subtle); text-align: left;
-      box-shadow: var(--shadow-subtle); transition: all 0.3s ease;
-      &:hover { transform: translateY(-6px); border-color: var(--bright-red); box-shadow: var(--shadow-3d); }
-    }
-    .pillar-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    .pillar-card h3 { margin-bottom: 0.5rem; font-size: 1.2rem; }
-    .pillar-card p { font-size: 0.9rem; color: #64748b; }
-    .services-highlight { max-width: 1240px; margin: 4rem auto; padding: 0 1.5rem; }
-    .section-title { text-align: center; margin-bottom: 2.5rem; }
-    .section-title h2 { font-size: 2.2rem; }
-    .section-title p { color: #64748b; font-size: 1rem; }
-    .service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
-    .service-box {
-      background: #fff; border-radius: 20px; overflow: hidden; border: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-subtle); transition: all 0.3s ease;
-      &:hover { transform: translateY(-6px); border-color: var(--bright-red); box-shadow: 0 12px 30px rgba(9, 26, 48, 0.1); }
-      img { width: 100%; height: 220px; object-fit: cover; }
-    }
-    .box-content { padding: 1.5rem; }
-    .box-content h4 { font-size: 1.2rem; margin-bottom: 0.5rem; }
-    .box-content p { font-size: 0.9rem; color: #64748b; }
-    .location-section {
-      max-width: 1240px; margin: 4rem auto; padding: 2.5rem; background: #ffffff; border-radius: 24px;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; border: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-subtle);
-    }
-    .loc-box { margin-top: 1.2rem; background: #f8fafc; padding: 1.4rem; border-radius: 16px; font-size: 0.9rem; line-height: 1.8; }
-    .brand-accent-box { border-left: 4px solid var(--marine-blue); }
-    .mt-4 { margin-top: 1.5rem; }
-    @media (max-width: 850px) {
-      .hero-container { grid-template-columns: 1fr; }
-      .hero-text h1 { font-size: 2.4rem; }
-      .hero-img { height: 280px; }
-      .location-section { grid-template-columns: 1fr; }
-    }
-  `]
+  styles: []
 })
-export class HomeComponent {
-  @Output() openQuoteModal = new EventEmitter<void>();
-
-  selectedAge = 'All';
-  ageGroups = ['All', '0-3M', '6-12M', '1-2Y', '2-4Y', '4-6Y'];
-  parallaxTransform = 'rotateY(0deg) rotateX(0deg)';
-
-  photoReviews = [
-    {
-      productName: 'Handblock Cotton Party Frock',
-      photo: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?auto=format&fit=crop&w=600&q=80',
-      age: '18 Months',
-      weight: '11.5 kg',
-      height: '82 cm',
-      sizePurchased: '1-2Y',
-      comment: 'The extra 2-inch internal seam margin allowed a perfect fit without feeling tight on her waist during playtime.',
-      author: 'Pooja K.',
-      city: 'Mumbai'
-    },
-    {
-      productName: 'Chanderi Silk Festive Lehenga',
-      photo: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=600&q=80',
-      age: '4.5 Years',
-      weight: '17.2 kg',
-      height: '106 cm',
-      sizePurchased: '4-5Y',
-      comment: 'Zero itchiness! The muslin lining felt like a soft cloud. She danced all evening without asking to change.',
-      author: 'Ananya S.',
-      city: 'Ahmedabad'
-    },
-    {
-      productName: 'Mother & Daughter Royal Co-ord',
-      photo: 'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?auto=format&fit=crop&w=600&q=80',
-      age: '3 Years (Child)',
-      weight: '14.0 kg',
-      height: '94 cm',
-      sizePurchased: 'M (Mom) / 2-3Y (Kid)',
-      comment: 'Super fast delivery and the color matching under festive lights was breathtaking. Truly bespoke luxury.',
-      author: 'Neha R.',
-      city: 'Bangalore'
-    }
+export class HomeComponent implements OnInit {
+  categories: Category[] = [
+    { name: 'Baby (0-2Y)', image: 'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=600', link: '/catalog', count: 156 },
+    { name: 'Kids (3-8Y)', image: 'https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=600', link: '/catalog', count: 243 },
+    { name: 'Teens (9-17Y)', image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600', link: '/catalog', count: 189 }
   ];
 
-  constructor(public api: ApiService) {}
+  newProducts: Product[] = [
+    { id: 1, name: 'Cotton Onesie Set (3-Pack)', price: 899, originalPrice: 1199, image: 'https://images.unsplash.com/photo-1522771930-78848d9293e8?w=400', ageRange: '0-2 Years', category: 'Baby Wear', badge: 'new', rating: 4.8 },
+    { id: 2, name: 'Playful Dinosaur T-Shirt', price: 549, image: 'https://images.unsplash.com/photo-1596870230751-ebdfce98ec42?w=400', ageRange: '3-5 Years', category: 'Tops', badge: 'new', rating: 4.6 },
+    { id: 3, name: 'Denim Overalls', price: 1299, image: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=400', ageRange: '6-8 Years', category: 'Bottoms', badge: 'discount', rating: 4.7 },
+    { id: 4, name: 'Rainbow Hoodie', price: 999, image: 'https://images.unsplash.com/photo-1519238809107-ee8992a1931c?w=400', ageRange: '9-11 Years', category: 'Outerwear', badge: 'new', rating: 4.9 }
+  ];
 
-  onMouseMove(e: MouseEvent) {
-    const { innerWidth, innerHeight } = window;
-    const xFactor = (e.clientX / innerWidth - 0.5) * 16;
-    const yFactor = (e.clientY / innerHeight - 0.5) * -16;
-    this.parallaxTransform = `rotateY(${xFactor}deg) rotateX(${yFactor}deg)`;
-  }
+  saleProducts: Product[] = [
+    { id: 5, name: 'Summer Dress Collection', price: 799, originalPrice: 1499, image: 'https://images.unsplash.com/photo-1621451537084-482c730a5a68?w=400', ageRange: '3-5 Years', category: 'Dresses', badge: 'sale' },
+    { id: 6, name: 'Sports Jersey Set', price: 649, originalPrice: 1099, image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400', ageRange: '6-8 Years', category: 'Activewear', badge: 'sale' },
+    { id: 7, name: 'Winter Jacket', price: 1599, originalPrice: 2499, image: 'https://images.unsplash.com/photo-1608234807905-4466023792f5?w=400', ageRange: '9-11 Years', category: 'Outerwear', badge: 'sale' },
+    { id: 8, name: 'Formal Shirt & Tie', price: 899, originalPrice: 1399, image: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=400', ageRange: '12-14 Years', category: 'Formal', badge: 'sale' }
+  ];
 
-  setAgeFilter(age: string) {
-    this.selectedAge = age;
-  }
+  constructor() {}
 
-  handleQuoteClick() {
-    this.openQuoteModal.emit();
-    this.api.openQuoteModal();
+  ngOnInit(): void {}
+
+  getDiscountPercent(product: Product): number {
+    if (product.originalPrice && product.price) {
+      return Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+    }
+    return 0;
   }
 }
